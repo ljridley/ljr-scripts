@@ -1,6 +1,7 @@
 # -----------------------------------------------------------------------------------------------
 # Component: Sophos Central Installer
-# Author: Stephen Weber
+# Original Author: Stephen Weber 
+# Original source: https://github.com/q2srw77/Generic-Installer
 # Purpose: Using the new Sophos Thin installer, 
 #          perform default install of Sophos Central using the defined variables
 # Version 1.2
