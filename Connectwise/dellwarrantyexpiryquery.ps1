@@ -62,6 +62,7 @@ try {
 }
 
 # Final output (this is what CW RMM captures)
+# If you only want to output the date and not the time, remove the "HH:mmLss" from the ToString
 
 if ($EndDate) {
     $FormattedDate = [DateTime]::Parse($EndDate).ToString("yyyy-MM-dd HH:mm:ss")
@@ -69,4 +70,3 @@ if ($EndDate) {
 } else {
     Write-Output "Expired or Unknown"
 }
-
