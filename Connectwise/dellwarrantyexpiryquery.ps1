@@ -62,8 +62,11 @@ try {
 }
 
 # Final output (this is what CW RMM captures)
+
 if ($EndDate) {
-    Write-Output $EndDate
+    $FormattedDate = [DateTime]::Parse($EndDate).ToString("yyyy-MM-dd HH:mm:ss")
+    Write-Output $FormattedDate
 } else {
     Write-Output "Expired or Unknown"
 }
+
