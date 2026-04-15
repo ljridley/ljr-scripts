@@ -63,6 +63,7 @@ try {
 
 # Final output (this is what CW RMM captures)
 # If you only want to output the date and not the time, remove the "HH:mmLss" from the ToString
+# To output date as UK style, change ToString to dd/MM/yyyy
 
 if ($EndDate) {
     $FormattedDate = [DateTime]::Parse($EndDate).ToString("yyyy-MM-dd HH:mm:ss")
