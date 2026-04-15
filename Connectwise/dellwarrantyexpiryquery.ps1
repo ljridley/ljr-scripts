@@ -1,40 +1,69 @@
-# Enter client ID and client secret, you need to get this via Dell TechDirect API access.
-$ClientID     = "YOUR_CLIENT_ID"
-$ClientSecret = "YOUR_CLIENT_SECRET"
+# =====================
+# Dell Warranty Lookup
+# =====================
 
-$AuthUri = "https://apigtwb2c.us.dell.com/auth/oauth/v2/token"
-$AuthBody = "grant_type=client_credentials"
+# Dell TechDirect API credentials
+$ClientID     = "REPLACE_WITH_CLIENT_ID"
+$ClientSecret = "REPLACE_WITH_CLIENT_SECRET"
 
-$AuthHeader = @{
-    Authorization = "Basic " + :ToBase64String(
-        [Text.Encoding]::ASCII.GetBytes("$ClientID:$ClientSecret")
-    )
+# Get Service Tag
+try {
+    $ServiceTag = (Get-CimInstance Win32_BIOS).SerialNumber
+} catch {
+    Write-Output "Not Dell"
+    exit 0
 }
 
-$TokenResponse = Invoke-RestMethod `
-    -Method POST `
-    -Uri $AuthUri `
-    -Headers $AuthHeader `
-    -Body $AuthBody `
-    -ContentType "application/x-www-form-urlencoded"
+# OAuth2 token request
+$AuthUri  = "https://apigtwb2c.us.dell.com/auth/oauth/v2/token"
+$AuthBody = "grant_type=client_credentials"
 
-$AccessToken = $TokenResponse.access_token
+$EncodedAuth = [Convert]::ToBase64String(
+    [Text.Encoding]::ASCII.GetBytes("${ClientID}:${ClientSecret}")
+)
 
-$ServiceTag = (Get-CimInstance Win32_BIOS).SerialNumber
+$AuthHeader = @{
+    Authorization = "Basic $EncodedAuth"
+}
+
+try {
+    $TokenResponse = Invoke-RestMethod `
+        -Method POST `
+        -Uri $AuthUri `
+        -Headers $AuthHeader `
+        -Body $AuthBody `
+        -ContentType "application/x-www-form-urlencoded"
+
+    $AccessToken = $TokenResponse.access_token
+} catch {
+    Write-Output "Dell API Auth Failed"
+    exit 0
+}
+
+# Warranty lookup
+$WarrantyUri = "https://apigtwb2c.us.dell.com/PROD/sbil/eapi/v5/asset-entitlements?servicetags=$ServiceTag"
 
 $Headers = @{
     Authorization = "Bearer $AccessToken"
     Accept        = "application/json"
 }
 
-$WarrantyUri = "https://apigtwb2c.us.dell.com/PROD/sbil/eapi/v5/asset-entitlements?servicetags=$ServiceTag"
+try {
+    $WarrantyInfo = Invoke-RestMethod -Method GET -Uri $WarrantyUri -Headers $Headers
 
-$WarrantyInfo = Invoke-RestMethod -Method GET -Uri $WarrantyUri -Headers $Headers
+    $EndDate = (
+        $WarrantyInfo.entitlements |
+        Sort-Object endDate -Descending |
+        Select-Object -First 1
+    ).endDate
+} catch {
+    Write-Output "Warranty Lookup Failed"
+    exit 0
+}
 
-$EndDate = (
-    $WarrantyInfo.entitlements |
-    Sort-Object endDate -Descending |
-    Select-Object -First 1
-).endDate
-
-Write-Output $EndDate
+# Final output (this is what CW RMM captures)
+if ($EndDate) {
+    Write-Output $EndDate
+} else {
+    Write-Output "Expired or Unknown"
+}
