@@ -64,6 +64,8 @@ try {
 # Final output (this is what CW RMM captures)
 # If you only want to output the date and not the time, remove the "HH:mmLss" from the ToString
 # To output date as UK style, change ToString to dd/MM/yyyy
+# You will need to set a custom device field in Connectwise, and pull the %output% of this script into the field
+
 
 if ($EndDate) {
     $FormattedDate = [DateTime]::Parse($EndDate).ToString("yyyy-MM-dd HH:mm:ss")
