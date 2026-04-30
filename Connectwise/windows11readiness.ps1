@@ -489,6 +489,8 @@ Switch ($outObject.returnCode) {
 
 # =============================
 # ConnectWise RMM Output Logic
+#
+# You will need to set a custom device field in Connectwise, and pull the %output% of this script into the field
 # =============================
 
 $FieldName = "Windows 11 Capable"
